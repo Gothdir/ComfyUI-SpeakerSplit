@@ -8,8 +8,10 @@ Built for talking-head / AI-video pipelines where you generate a clip, isolate a
 character's voice, and feed that same reference into every following generation.
 
 - **No HuggingFace token required** (unlike pyannote — no gated model, no login).
-- **Runs with zero extra packages** in a basic MFCC mode, or with **SpeechBrain
-  ECAPA** embeddings for accurate separation of similar voices.
+- **SpeechBrain ECAPA** embeddings by default for accurate separation, even of
+  similar-sounding voices. Strongly recommended — install it and leave it on.
+- Still runs with **zero extra packages** (MFCC fallback) if you just want to
+  wire things up, but ECAPA is what makes the results actually usable.
 - Every widget has an inline tooltip explaining what it does and how to tune it.
 
 ---
@@ -56,20 +58,22 @@ Speakers are numbered by talk time — `speaker_1` has the most speech.
 
 ## Installation
 
-Clone into your ComfyUI `custom_nodes` folder:
+### 1. Clone the node
 
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/Gothdir/ComfyUI-SpeakerSplit
 ```
 
-The node **works out of the box** in MFCC mode with only the torch / torchaudio /
-numpy that already ship with ComfyUI. For the far more accurate **ECAPA** mode,
-install the optional dependencies.
+### 2. Install the ECAPA dependencies (do this — don't skip it)
 
-### Portable ComfyUI / ComfyUI-Easy-Install
+The node *can* run on nothing but the torch / torchaudio / numpy that ship with
+ComfyUI (MFCC mode), but that mode only tells clearly different voices apart and
+falls over on anything subtle. **ECAPA is what makes this node actually work**,
+so treat the step below as part of the normal install, not an optional extra.
 
-Run these **from the `python_embeded` folder** of your install:
+**Portable ComfyUI / ComfyUI-Easy-Install** — run these **from the
+`python_embeded` folder** of your install:
 
 ```bat
 cd /d <your-path>\python_embeded
@@ -78,7 +82,7 @@ python.exe -m pip install speechbrain silero-vad --no-deps
 python.exe -m pip install hyperpyyaml joblib huggingface_hub sentencepiece scipy tqdm packaging scikit-learn soundfile
 ```
 
-### venv / Conda
+**venv / Conda:**
 
 ```bash
 python -m pip install speechbrain silero-vad --no-deps
@@ -92,33 +96,45 @@ python -m pip install hyperpyyaml joblib huggingface_hub sentencepiece scipy tqd
 > on the CPU only. The second command installs the *actual* runtime
 > dependencies that SpeechBrain needs.
 
-Verify your CUDA torch is still intact afterwards:
+### 3. Verify torch is still on the GPU
 
 ```bat
 python.exe -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
 
 This must print `True` and a `+cu12x` (or `+cu11x`) version. If it prints
-`False`, a `--no-deps` was missed and you'll need to reinstall the matching
-CUDA torch wheel.
+`False`, a `--no-deps` was missed — reinstall the matching CUDA torch wheel.
 
-On first run in ECAPA mode the **ECAPA-TDNN model (~80 MB)** is downloaded
-automatically to `ComfyUI/models/speaker_embed/spkrec-ecapa-voxceleb`.
+### 4. First run
+
+Leave the node's `embedder` widget on its default (`auto`, which uses ECAPA when
+present). On the first ECAPA run the **ECAPA-TDNN model (~80 MB)** downloads
+automatically to `ComfyUI/models/speaker_embed/spkrec-ecapa-voxceleb`. No
+HuggingFace token, no login.
+
+> [!NOTE]
+> Skipping step 2 is only meant for a quick "does it wire up" test. For any real
+> use — especially separating similar voices for voice-clone references — install
+> ECAPA. See the [tuning guide](#it-only-detects-one-speaker) for why MFCC alone
+> collapses similar voices into one speaker.
 
 ---
 
 ## What happens if packages are missing
 
-The node degrades gracefully instead of crashing:
+If you followed the install above you're on the accurate ECAPA path and can skip
+this section. If a dependency is missing the node degrades gracefully instead of
+crashing — useful to know, but these fallbacks are **not** where you want to stay:
 
 | Missing package | Behaviour |
 | --- | --- |
 | `silero-vad` | Automatically uses an energy-based VAD (simpler, less robust with background noise). |
-| `speechbrain` | With `embedder = auto`, falls back to MFCC embeddings + a warning. With `embedder = ecapa`, aborts with an install hint. |
+| `speechbrain` | With `embedder = auto`, falls back to MFCC embeddings + a warning. With `embedder = ecapa`, aborts with an install hint. MFCC only separates clearly different voices — install SpeechBrain. |
 | `scikit-learn` | Uses a built-in spherical k-means (numpy) plus a numpy silhouette score for auto-detection. |
 
 The `report` output always states which VAD and which embedder were actually
-used, so you can tell at a glance whether you're on the accurate path.
+used. If it says `mfcc (Fallback)`, SpeechBrain didn't load — go back to the
+[install step](#2-install-the-ecapa-dependencies-do-this--dont-skip-it).
 
 ---
 
@@ -141,7 +157,7 @@ plus a text `report`.
 | `pad_seconds` | `0.05` | 0.0–0.5 | Padding added before/after each segment so word onsets aren't clipped. |
 | `fade_ms` | `20` | 0–200 | Crossfade at every cut to avoid clicks. |
 | `smooth_frames` | `5` | 1–21 (odd) | Median smoothing of the labels, in 100 ms frames. Higher suppresses flicker but makes switches sluggish. |
-| `embedder` | `auto` | auto / ecapa / mfcc | Voice-fingerprint method. `ecapa` = accurate neural (needs speechbrain). `mfcc` = no extra packages, only separates clearly different voices. `auto` = ecapa with automatic MFCC fallback. |
+| `embedder` | `auto` | auto / ecapa / mfcc | Voice-fingerprint method. Keep on `auto` (or `ecapa`) with SpeechBrain installed — that's the recommended setup. `ecapa` = accurate neural embeddings. `mfcc` = no extra packages but only separates clearly different voices (test/fallback only). `auto` = ecapa with automatic MFCC fallback. |
 
 **Outputs:** `speaker_1`, `speaker_2`, `speaker_3` (ordered by talk time; unused
 outputs are a 1-sample silence), and `report` — a text summary with total
