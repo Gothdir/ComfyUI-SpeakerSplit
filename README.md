@@ -65,14 +65,14 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/Gothdir/ComfyUI-SpeakerSplit
 ```
 
-### 2. Install the ECAPA dependencies (do this — don't skip it)
+### 2. Install the ECAPA dependencies 
 
 The node *can* run on nothing but the torch / torchaudio / numpy that ship with
 ComfyUI (MFCC mode), but that mode only tells clearly different voices apart and
 falls over on anything subtle. **ECAPA is what makes this node actually work**,
 so treat the step below as part of the normal install, not an optional extra.
 
-**Portable ComfyUI / ComfyUI-Easy-Install** — run these **from the
+**Portable ComfyUI — run these from the
 `python_embeded` folder** of your install:
 
 ```bat
