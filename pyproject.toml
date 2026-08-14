@@ -1,0 +1,21 @@
+[project]
+name = "comfyui-speakersplit"
+description = "Speaker diarization for ComfyUI: split multi-speaker audio into per-speaker tracks and extract clean voice-clone reference clips for consistent voices across generations."
+version = "1.0.0"
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "speechbrain>=1.0.0",
+    "silero-vad>=5.1",
+    "scikit-learn>=1.2",
+    "soundfile>=0.12",
+]
+
+[project.urls]
+Repository = "https://github.com/Gothdir/ComfyUI-SpeakerSplit"
+
+[tool.comfy]
+PublisherId = "gothdir"
+DisplayName = "ComfyUI-SpeakerSplit"
+Icon = ""

@@ -1,0 +1,35 @@
+# -----------------------------------------------------------------------------
+# ComfyUI-SpeakerSplit dependencies
+#
+# WARNING: Do NOT install this file naively with `pip install -r` on a portable
+# ComfyUI build. `speechbrain` and `silero-vad` both declare torch/torchaudio
+# as dependencies and pip will happily replace your CUDA build with CPU wheels.
+#
+# Recommended install (portable / ComfyUI-Easy-Install), from python_embeded:
+#     python.exe -m pip install speechbrain silero-vad --no-deps
+#     python.exe -m pip install hyperpyyaml joblib huggingface_hub sentencepiece scipy tqdm packaging scikit-learn soundfile
+#
+# The node also runs with NO extra packages at all (embedder = "mfcc"),
+# using only torch/torchaudio/numpy that ship with ComfyUI.
+# -----------------------------------------------------------------------------
+
+# Accurate neural speaker embeddings (optional but strongly recommended)
+speechbrain>=1.0.0
+
+# Voice activity detection (optional; falls back to energy VAD)
+silero-vad>=5.1
+
+# Clustering (optional; falls back to built-in numpy k-means)
+scikit-learn>=1.2
+
+# Audio I/O backend for torchaudio.save on some platforms
+soundfile>=0.12
+
+# Runtime dependencies of speechbrain (only needed when using the ecapa embedder)
+hyperpyyaml>=1.2
+huggingface_hub>=0.20
+joblib
+sentencepiece
+scipy
+tqdm
+packaging
