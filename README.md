@@ -102,7 +102,7 @@ python -m pip install hyperpyyaml joblib huggingface_hub sentencepiece scipy tqd
 python.exe -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
 
-This must print `True` and a `+cu12x` (or `+cu11x`) version. If it prints
+This must print `True` and a `+cu12x` (or `+cu13x`) version. If it prints
 `False`, a `--no-deps` was missed — reinstall the matching CUDA torch wheel.
 
 ### 4. First run
